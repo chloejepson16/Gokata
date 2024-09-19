@@ -4,6 +4,9 @@ import(
 "fmt"
 "sort"
 "strings"
+"unicode"
+"math/rand"
+"time"
 ) 
 
 //1. write a program that calculates the factorial of a number
@@ -107,6 +110,115 @@ func deleteDuplicates(str string) string{
 
 //8. write a program to implement a basic calculator that can perform addition, subtraction, mult, and division
 
+func calculator(operation int) float64{
+	var num1, num2 float64
+	switch operation {
+	case 0:
+		fmt.Println("Addition (0) selected")
+		fmt.Print("Enter first number: ")
+		fmt.Scanln(&num1)
+		fmt.Print("Enter second number: ")
+		fmt.Scanln(&num2)
+		result := num1 + num2
+		return result
+	case 1:
+		fmt.Println("Subtraction (1) selected")
+		fmt.Print("Enter first number: ")
+		fmt.Scanln(&num1)
+		fmt.Print("Enter second number: ")
+		fmt.Scanln(&num2)
+		result := num1 - num2
+		return result
+	case 2:
+		fmt.Println("Multiplicaiton (2) selected")
+		fmt.Print("Enter first number: ")
+		fmt.Scanln(&num1)
+		fmt.Print("Enter second number: ")
+		fmt.Scanln(&num2)
+		result := num1 * num2
+		return result
+	case 3:
+		fmt.Println("Division (2) selected")
+		fmt.Print("Enter first number: ")
+		fmt.Scanln(&num1)
+		fmt.Print("Enter second number: ")
+		fmt.Scanln(&num2)
+		result := num1 / num2
+		return result
+	}
+	return 0;
+}
+
+//9. find the longest word in the sentence
+func findLongestWord(str string) string{
+	runes:= []rune(str)
+	longestWord:= ""
+	currentWord:= ""
+	charMaxLength:= 0
+
+	for _, character := range runes{
+		if unicode.IsLetter(character){
+			currentWord+= string(character)
+		}else{
+			if(len(currentWord) > charMaxLength){
+				charMaxLength= len(currentWord)
+				longestWord= currentWord
+			}
+			currentWord= ""
+		}
+	}
+
+	if len(currentWord) > charMaxLength {
+		longestWord = currentWord
+	}
+
+	return longestWord
+	
+}
+
+//10. create a program that converts a decimal number to binary
+func decimalToBinary(n int) string{
+	if n == 0{
+		return "0"
+	}
+
+	binaryNum:= ""
+	for n > 0{
+		remainder := n % 2
+		binaryNum = fmt.Sprintf("%d%s", remainder, binaryNum)
+		n= n/2
+	}
+
+	return binaryNum;
+}
+//11. write a function that checks if a number is a prime number
+func isPrimeNumber(n int) bool{
+	if n<= 1{
+		return false
+	}
+	if n <= 3{
+		return true
+	}
+
+	if n % 2 == 0 || n % 3 == 0{
+		return false
+	}
+
+	for i:= 5; i+i <= n; i+=6{
+		if (n % i == 0) || ((n % (i + 2)) == 0){
+			return false
+		}
+	}
+
+	return true
+}
+//12. implement a program that generates a random number within a given range
+func generateWithinRange(min int, max int) int{
+	rand.Seed(time.Now().UnixNano())
+	randomInt:= rand.Intn(max - min + 1) + min
+	return randomInt
+}
+
 func main() {
     fmt.Println("Hello, World!")
 	//1. factorial
@@ -142,5 +254,40 @@ func main() {
 	stringWithDuplicates := "aabbcc"
 	stringWithDuplicatesRemoved:= deleteDuplicates(stringWithDuplicates)
 	fmt.Println("removing duplicates: ", stringWithDuplicatesRemoved)
+
+	//8. calculator
+	fmt.Println("Please input a number that corresponds to which operation you would like the calculator to perform,")
+	fmt.Println("Addition (0), Subtraciton (1), Multiplication (2), Division (3)")
+	var operationIndicator int
+	fmt.Scanln(&operationIndicator)
+	claculatorResult:= calculator(operationIndicator)
+	fmt.Println("Result: ", claculatorResult)
+
+	//9. finding the longest word
+	sentence:= "Try to find the longest word."
+	longestWord:= findLongestWord(sentence)
+	fmt.Println("Finding the longest word: ", longestWord)
+
+	//10. decimal to binary num
+	decimalNum:= 12
+	binaryNum:= decimalToBinary(decimalNum)
+	fmt.Println("Binary num conversion of 12: ", binaryNum)
+
+	//11. function to find if a number is a primary number
+	num1:= 2
+	num2:= 16
+	fmt.Println("is 2 a prime number: ", isPrimeNumber(num1))
+	fmt.Println("is 16 a prime number: ", isPrimeNumber(num2))
+
+	//12. Generate a random number between two numbers
+	var max int
+	var min int
+	fmt.Println("To generate a random number between two number please enter a max and a min value")
+	fmt.Print("Enter the min value: ")
+	fmt.Scanln(&min)
+	fmt.Print("Enter the max value: ")
+	fmt.Scanln(&max)
+	randInt:= generateWithinRange(min, max)
+	fmt.Println("Random Value: ", randInt)
 
 }
