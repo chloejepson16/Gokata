@@ -7,6 +7,9 @@ import(
 "unicode"
 "math/rand"
 "time"
+"math"
+"io/ioutil"
+"strconv"
 ) 
 
 //1. write a program that calculates the factorial of a number
@@ -214,12 +217,187 @@ func isPrimeNumber(n int) bool{
 }
 //12. implement a program that generates a random number within a given range
 func generateWithinRange(min int, max int) int{
-	rand.Seed(time.Now().UnixNano())
-	randomInt:= rand.Intn(max - min + 1) + min
-	return randomInt
+	if min > max{
+		rand.Seed(time.Now().UnixNano())
+		randomInt:= rand.Intn(max - min + 1) + min
+		return randomInt
+	}
+	return 0
+}
+
+//13. num vowels
+func isVowel(ch rune) bool{
+	ch= unicode.ToLower(ch)
+	return ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u'
+}
+func numVowels(str string) int{
+	numVowels:= 0
+	for _, ch := range str{
+		if(isVowel(ch)){
+			numVowels++
+		}
+	}
+
+	return numVowels
+}
+
+//14. find the second smallest element in an array/slice of integers
+func secondSmallest(arr []int) int{
+	if len(arr) < 2{
+		return 0
+	}
+
+	smallest:= math.MaxInt64
+	secondSmallest:= math.MaxInt64
+
+	for _, num := range arr{
+		if num < smallest{
+			secondSmallest= smallest
+			smallest= num
+		}else if num < secondSmallest && num != smallest{
+			secondSmallest= num
+		}
+	}
+
+	if secondSmallest == math.MaxInt64{
+		return 0
+	}
+
+	return secondSmallest
+}
+
+//15. checks if two strings are anagrams of each other
+func isAnagram(str1 string, str2 string) bool{
+	charCountString1:= make(map[rune] int)
+	for _, char:= range str1{
+		charCountString1[char]++
+	}
+
+	charCountString2:= make(map[rune] int)
+	for _, char:= range str2{
+		charCountString2[char]++
+	}
+
+	if len(charCountString2) != len(charCountString1){
+		return false
+	}
+
+	for key, value:= range charCountString1{
+		if value2, exists:= charCountString2[key]; !exists || value2 != value{
+			return false
+		}
+	}
+
+	return true
+
+}
+
+//16. reads a file and counts the number of words in it
+func numWords(str string) int{
+	runes:= []rune(str)
+	inWord:= false
+	wordCount:= 0
+
+	for _, char:= range runes{
+		if unicode.IsLetter(char){
+			if !inWord{
+				wordCount++
+				inWord= true
+			}
+		}else{
+			inWord= false
+		}
+	}
+	return wordCount
+}
+func numWordsInFile(fileName string) int{
+	content, err:= ioutil.ReadFile(fileName)
+	if err != nil{
+		fmt.Println("unable to read file")
+	}
+
+	fileContents:= string(content)
+	numWordsInFile:= numWords(fileContents)
+	return numWordsInFile
+}
+
+//17. create a functin that merges two sorted ararys into a single array
+func mergeSort(arr1 []int, arr2 []int) []int {
+	merged:= make([]int, 0, len(arr1) + len(arr2))
+	i, j:= 0, 0
+
+	for i < len(arr1) && j < len(arr2){
+		if arr1[i] < arr2[j]{
+			merged= append(merged, arr1[i])
+			i++
+		}else{
+			merged= append(merged, arr2[j])
+			j++
+		}
+	}
+
+	//adding any left over from previous loop condition
+	for i < len(arr1){
+		merged= append(merged, arr1[i])
+		i++
+	}
+	for j < len(arr2){
+		merged= append(merged, arr2[j])
+		j++
+	}
+
+	return merged
+}
+
+//18. calculate the sum of digits in a given number
+func sumOfDigits(num int) int{
+	str:= strconv.Itoa(num)
+	sum:= 0
+	for _, char:= range str{
+		intValue:= int(char - '0')
+		sum= sum + intValue
+	}
+
+	return sum
+}
+
+//19. convert roman numeral to int
+func valueOfNumeral(char byte) int{
+	if char == 'I'{return 1}
+	if char == 'V'{return 5}
+	if char == 'X'{return 10}
+	if char == 'L'{return 50}
+	if char == 'C'{return 100}
+	if char == 'D'{return 500}
+	if char == 'M'{return 1000}
+	return 0
+}
+
+func numeralToDecimal(str string) int{
+	sum:= 0
+
+	for i:= 0; i < len(str); i++{
+		val1:= valueOfNumeral(str[i])
+
+		//comparison 1
+		if i + 1 < len(str){
+			val2:= valueOfNumeral(str[i+1])
+
+			if val1 >= val2{
+				sum+= val1
+			}else{
+				sum+= (val2 - val1)
+				i++
+			}
+		}else{
+			sum+= val1
+		}
+	}
+	return sum
 }
 
 func main() {
+	/*
     fmt.Println("Hello, World!")
 	//1. factorial
 	fmt.Println("Please enter the number you would like to find the factorial of: ")
@@ -290,4 +468,39 @@ func main() {
 	randInt:= generateWithinRange(min, max)
 	fmt.Println("Random Value: ", randInt)
 
+	//13. write a function that counts the number of vowels in a string
+	stringToCountVowels:= "How many vowels in this string?"
+	fmt.Println("Num vowels in this string: ", numVowels(stringToCountVowels))
+
+	*/
+
+	//14. create a program that finds the second smallest element in an array/slice of integers
+	arr:= []int{9, 20, 22, 1, 4, 15}
+	fmt.Println("second smallest in the array: ", secondSmallest(arr))
+
+	//15. implement a function that checks if two strings are anagrams of each other
+	iceman:= "iceman"
+	cinema:= "cinema"
+	fmt.Println("are iceman and cinema anagrams: ", isAnagram(iceman, cinema))
+
+	//16. write a program that reads a file and counts the number of words in it
+	fmt.Println("number of words in the text example file: ", numWordsInFile("textExample.txt"))
+
+	//17. create a function that merges two sorted arrays into a single sorted array
+	arr1 := []int{1, 3, 5, 7, 9}
+    arr2 := []int{2, 4, 6, 8, 10}
+	mergedArr:= mergeSort(arr1, arr2)
+	fmt.Println("merged array: ", mergedArr)
+
+	//18. implement a program that calculates the sum of digits in a given number
+	longNumber:= 12923
+	sumDigits:= sumOfDigits(longNumber)
+	fmt.Println("sum of digits in 12923: ", sumDigits)
+
+	//19. write a function that converts a roman numeral to an integer
+	romanNumeral:= "IV"
+	fmt.Println("value of IV: ", numeralToDecimal(romanNumeral))
+	
+	//20. create a program that sorts a slice of strings based on thir length
+	//21. implement a function that generates a multiplication table up to a given number
 }
