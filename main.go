@@ -396,6 +396,54 @@ func numeralToDecimal(str string) int{
 	return sum
 }
 
+//20. create a program that sorts a slice of strings based on their length
+func sortByLength(strings []string){
+	n:= len(strings)
+
+	for i:= 0; i< n; i++{
+		for j:=0; j< n-i-1; j++{
+			if len(strings[j]) > len(strings[j+1]) {
+				strings[j], strings[j+1] = strings[j+1], strings[j]
+			}
+		}
+	}
+}
+
+//22. write a function that decides wether it is a leap year or not
+func isLeapYear(year int) bool{
+	return (year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0))
+}
+
+//23. function to find the gcd
+func gcd(num1 int, num2 int) int{
+	var smallest int
+	if num1 < num2{
+		smallest= num1
+	}else{
+		smallest= num2
+	}
+
+	for smallest > 0{
+		if((num1 % smallest == 0) && (num2 % smallest == 0)){
+			break
+		}
+		smallest--
+	}
+
+	return smallest
+}
+
+//24. linear search
+func linearSearch(arr []int, target int) int{
+	for i, value:= range arr{
+		if value == target{
+			return i
+		}
+	}
+	return 0
+}
+
+
 func main() {
 	/*
     fmt.Println("Hello, World!")
@@ -501,6 +549,26 @@ func main() {
 	romanNumeral:= "IV"
 	fmt.Println("value of IV: ", numeralToDecimal(romanNumeral))
 	
-	//20. create a program that sorts a slice of strings based on thir length
+	//20. create a program that sorts a slice of strings based on their length
+	strings := []string{"apple", "banana", "kiwi", "grapefruit", "pear"}
+	fmt.Println("Before sorting:", strings)
+	sortByLength(strings)
+	fmt.Println("After sorting:", strings)
+
 	//21. implement a function that generates a multiplication table up to a given number
+	//22. write a program that checks if a given year is a leap year
+	year:= 2024
+	isLeapYear2024:= isLeapYear(year)
+	fmt.Println("is 2024 a leap year: ", isLeapYear2024)
+	//23. create a function that finds the GCD of two numbers
+	gcd1:=98
+	gcd2:=56
+	fmt.Println("gcd of 98 and 56: ", gcd(gcd1, gcd2))
+	//24. implement a program that performs linear search on an array to find a specific element
+	array := []int{10, 23, 45, 70, 11, 15}
+	target := 70
+	index := linearSearch(array, target)
+	fmt.Println("index of the value 70: ", index)
+
+	//25. write a function that calculates the area of common geometric shapes (circle, rectabngle, triangle)
 }
