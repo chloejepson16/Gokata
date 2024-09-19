@@ -409,6 +409,16 @@ func sortByLength(strings []string){
 	}
 }
 
+//21. multiplication table
+func multiplicationTable(n int){
+	for i:= 1; i <= n; i++{
+		for j:= 1; j<= n; j++{
+			fmt.Printf("%d\t", i*j)
+		}
+		fmt.Println()
+	}
+}
+
 //22. write a function that decides wether it is a leap year or not
 func isLeapYear(year int) bool{
 	return (year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0))
@@ -443,9 +453,30 @@ func linearSearch(arr []int, target int) int{
 	return 0
 }
 
+//24. area of three shapes
+func calculateArea(shape string, dimensions ...float64) float64{
+	switch shape {
+
+	case "circle":
+		radius := dimensions[0]
+		return math.Pi * radius * radius
+	case "rectangle":
+		width := dimensions[0]
+		height := dimensions[1]
+		return width * height
+	case "triangle":
+		base := dimensions[0]
+		height := dimensions[1]
+		return 0.5 * base * height
+	
+	default:
+		fmt.Println("other")
+		return 0
+	}
+}
+
 
 func main() {
-	/*
     fmt.Println("Hello, World!")
 	//1. factorial
 	fmt.Println("Please enter the number you would like to find the factorial of: ")
@@ -520,8 +551,6 @@ func main() {
 	stringToCountVowels:= "How many vowels in this string?"
 	fmt.Println("Num vowels in this string: ", numVowels(stringToCountVowels))
 
-	*/
-
 	//14. create a program that finds the second smallest element in an array/slice of integers
 	arr:= []int{9, 20, 22, 1, 4, 15}
 	fmt.Println("second smallest in the array: ", secondSmallest(arr))
@@ -556,6 +585,8 @@ func main() {
 	fmt.Println("After sorting:", strings)
 
 	//21. implement a function that generates a multiplication table up to a given number
+	multiplicationTable(6)
+
 	//22. write a program that checks if a given year is a leap year
 	year:= 2024
 	isLeapYear2024:= isLeapYear(year)
@@ -570,5 +601,8 @@ func main() {
 	index := linearSearch(array, target)
 	fmt.Println("index of the value 70: ", index)
 
-	//25. write a function that calculates the area of common geometric shapes (circle, rectabngle, triangle)
+	//25. write a function that calculates the area of common geometric shapes (circle, rectangle, triangle)
+	fmt.Println("Circle: ", calculateArea("circle", 5))
+	fmt.Println("Rectangle: ", calculateArea("rectangle", 4, 6))
+	fmt.Println("Triangle: ", calculateArea("triangle", 3, 8))
 }
