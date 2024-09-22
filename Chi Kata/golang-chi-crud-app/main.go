@@ -6,11 +6,45 @@ import(
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	"strings"
+	"github.com/golang-jwt/jwt/v5"
 )
 
+
+var jwtKey= []byte("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE3MjY5NjQyNjMsImV4cCI6MTc1ODUwMDI2MywiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.mT2qQM_hRPIlv9RXGW4dmbb105FmmW7rDAbNzEFcSzY")
+func JWTAuth(next http.Handler) http.Handler{
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		authHeader:= r.Header.Get("Authorization")
+		if authHeader == ""{
+			http.Error(w, "missing auth header", http.StatusUnauthorized)
+		}
+
+		tokenString:= strings.TrimPrefix(authHeader, "Bearer ")
+		if tokenString == authHeader{
+			http.Error(w, "malformed auth header",  http.StatusUnauthorized)
+			return
+		}
+
+		token, err:= jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error){
+			if _, ok:= token.Method.(*jwt.SigningMethodHMAC); !ok{
+				return nil, http.ErrAbortHandler
+			}
+			return jwtKey, nil
+		})
+
+		if err != nil || !token.Valid{
+			http.Error(w, "invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
 func main() {
 	//1. create a simple http server that responds with hello world
     r := chi.NewRouter()
+	//4. implement chi middleware
     r.Use(middleware.Logger)
     r.Get("/", func(w http.ResponseWriter, r *http.Request) {
         w.Write([]byte("Hello, World"))
@@ -32,10 +66,12 @@ func main() {
 }
 
 //mounting grocery handler
+//7. create an endpoint to perform crud operations on mock data
 func GroceryRoutes() chi.Router{
 	r:= chi.NewRouter()
 	groceryHandler:= GroceryHandler{}
-	r.Get("/", groceryHandler.ListGroceries)
+	//9. add authentification to one of the endpoints
+	r.With(JWTAuth).Get("/", groceryHandler.ListGroceries)
 	r.Post("/", groceryHandler.CreateGroceries)
 	r.Get("/{id}", groceryHandler.GetGroceries)
 	r.Put("/{id}", groceryHandler.UpdateGroceries)

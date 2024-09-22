@@ -11,13 +11,17 @@ type GroceryHandler struct{
 }
 
 func (g GroceryHandler) ListGroceries( w http.ResponseWriter, r *http.Request) {
+	//8. implement error handling
 	err:= json.NewEncoder(w).Encode(listGroceries())
 	if err != nil{
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
 }
+
+//3. create a route that accepts query params
 func (g GroceryHandler) GetGroceries( w http.ResponseWriter, r *http.Request) {
+	//6. implement route params with chi to retrieve specific data
 	id:= chi.URLParam(r, "id")
 	grocery:= getGroceries(id)
 	if grocery == nil{
@@ -29,6 +33,7 @@ func (g GroceryHandler) GetGroceries( w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+//5. create a route that accepts post requests
 func (g GroceryHandler) CreateGroceries( w http.ResponseWriter, r *http.Request) {
 	var grocery GroceryItem
 	err:= json.NewDecoder(r.Body).Decode(&grocery)
