@@ -96,6 +96,16 @@ func (g GroceryHandler) GetJellyBeans(w http.ResponseWriter, r *http.Request){
     w.Write([]byte(jellyBean))
 }
 
+func (g GroceryHandler) GetV2 (w http.ResponseWriter, r *http.Request){
+	response:= getV2()
+	if response == ""{
+		http.Error(w, "No endpoint for V2 found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+    w.Write([]byte(response))
+}
+
 //TODO: separate this out into models.go
 //file upload works with this curl command : curl -F "file=@/Users/chloejepson/Documents/Gokata/textExample.txt" http://localhost:3000/groceries/fileUpload
 func (g GroceryHandler) UploadFile(w http.ResponseWriter, r *http.Request){

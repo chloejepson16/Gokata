@@ -4,6 +4,7 @@ import(
 	"fmt"
 	"net/http"
 	"io/ioutil"
+	"regexp"
 )
 
 type GroceryItem struct{
@@ -79,7 +80,18 @@ func updateGrocery(id string, groceryUpdate GroceryItem) *GroceryItem{
 	return nil
 }
 
+func getV2()(string){
+	return "This is an endpoint for v2!"
+}
+
 func getJellyBeans(flavorName string) (string, error){
+
+	//14. implement input validation on request parameters
+	validFlavorName := regexp.MustCompile(`^[a-zA-Z0-9\s]+$`)
+	if (flavorName == "" || !validFlavorName.MatchString(flavorName)){
+		return "", fmt.Errorf("Invalid falvor name")
+	}
+
 	apiURL:= "https://jellybellywikiapi.onrender.com/api/Beans?flavorName=" + flavorName
 
 	resp, err := http.Get(apiURL)
