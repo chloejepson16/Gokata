@@ -9,6 +9,7 @@ import(
 
 	"strings"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/go-chi/httprate"
 )
 
 
@@ -59,10 +60,13 @@ func main() {
 		json.NewEncoder(w).Encode(response)
 	})
 
+	
+
 	//mount grocery route to the main function
 	r.Mount("/groceries", GroceryRoutes())
 
 	http.ListenAndServe(":3000", r)
+	
 }
 
 //mounting grocery handler
@@ -71,6 +75,8 @@ func GroceryRoutes() chi.Router{
 	r:= chi.NewRouter()
 	groceryHandler:= GroceryHandler{}
 	//9. add authentification to one of the endpoints
+	//12. add rate limiting to one endpoint
+	r.With(httprate.Limit(2, 1*time.Minute)).Get("/groceries", groceryHandler.ListGroceries)
 	r.With(JWTAuth).Get("/", groceryHandler.ListGroceries)
 	r.Post("/", groceryHandler.CreateGroceries)
 	r.Get("/{id}", groceryHandler.GetGroceries)
