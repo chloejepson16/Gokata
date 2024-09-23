@@ -80,7 +80,7 @@ func (g GroceryHandler) DeleteGroceries( w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusNoContent)
 }
 
-//file upload works with this curl command : curl -F "file=/Users/chloejepson/Documents/Gokata/textExample.txt" http://localhost:3000/fileUpload
+//file upload works with this curl command : curl -F "file=@/Users/chloejepson/Documents/Gokata/textExample.txt" http://localhost:3000/groceries/fileUpload
 func (g GroceryHandler) uploadFile(w http.ResponseWriter, r *http.Request){
 	err:= r.ParseMultipartForm(10 << 20)
 	if err != nil{
@@ -95,7 +95,7 @@ func (g GroceryHandler) uploadFile(w http.ResponseWriter, r *http.Request){
 	}
 	defer file.Close()
 
-	savePath:= filepath.Join("/Users/chloejepson/Documents/Gokata/", handler.Filename)
+	savePath:= filepath.Join("/Users/chloejepson/Documents/Gokata/Chi Kata", handler.Filename)
 
 	dest, err:= os.Create(savePath)
 	if err != nil{
