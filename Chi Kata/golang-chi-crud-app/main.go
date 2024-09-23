@@ -76,5 +76,6 @@ func GroceryRoutes() chi.Router{
 	r.Get("/{id}", groceryHandler.GetGroceries)
 	r.Put("/{id}", groceryHandler.UpdateGroceries)
 	r.Delete("/{id}", groceryHandler.DeleteGroceries)
+	r.Post("/fileUpload", groceryHandler.uploadFile)
 	return r
 }

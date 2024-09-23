@@ -1,8 +1,11 @@
 package main
 
 import(
+"fmt"
 "net/http"
 "encoding/json"
+"os"
+"path/filepath"
 
 "github.com/go-chi/chi/v5") 
 
@@ -75,4 +78,36 @@ func (g GroceryHandler) DeleteGroceries( w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+//file upload works with this curl command : curl -F "file=/Users/chloejepson/Documents/Gokata/textExample.txt" http://localhost:3000/fileUpload
+func (g GroceryHandler) uploadFile(w http.ResponseWriter, r *http.Request){
+	err:= r.ParseMultipartForm(10 << 20)
+	if err != nil{
+		http.Error(w, "cannot parse form", http.StatusBadRequest)
+		return
+	}
+
+	file, handler, err:= r.FormFile("file")
+	if err != nil{
+		http.Error(w, "unable to retrieve file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	savePath:= filepath.Join("/Users/chloejepson/Documents/Gokata/", handler.Filename)
+
+	dest, err:= os.Create(savePath)
+	if err != nil{
+		http.Error(w, "Unable to save file", http.StatusInternalServerError)
+		return
+	}
+	defer dest.Close()
+
+	_, err= dest.ReadFrom(file)
+	if err != nil{
+		http.Error(w, "issue saving file", http.StatusInternalServerError)
+		return
+	}
+	w.Write([]byte(fmt.Sprintf("File uploaded successfully: %s\n", handler.Filename)))
 }
