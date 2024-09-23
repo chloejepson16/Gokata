@@ -92,7 +92,7 @@ func GroceryRoutesV1() chi.Router{
 	r.Delete("/{id}", groceryHandler.DeleteGroceries)
 	r.Post("/fileUpload", groceryHandler.UploadFile)
 	//13. create a rout that fetches data from another api: http://localhost:3000/groceries/jellybeans/7up
-	r.Get("/jellybeans/{falvorName}", groceryHandler.GetJellyBeans)
+	r.Get("/jellybeans/{flavorName}", groceryHandler.GetJellyBeans)
 	return r
 }
 //15. create a route that supports versioning

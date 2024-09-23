@@ -85,10 +85,12 @@ func (g GroceryHandler) GetJellyBeans(w http.ResponseWriter, r *http.Request){
 	flavorName:= chi.URLParam(r, "flavorName")
 	jellyBean, err:= getJellyBeans(flavorName)
 	if err != nil{
+		fmt.Println(err)
 		http.Error(w, "JellyBean was not found", http.StatusNotFound)
 		return
 	}
 	if jellyBean == "" {
+		fmt.Println(err)
         http.Error(w, "JellyBean was not found", http.StatusNotFound)
         return
     }
@@ -103,7 +105,24 @@ func (g GroceryHandler) GetV2 (w http.ResponseWriter, r *http.Request){
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-    w.Write([]byte(response))
+	//17. write data in chunks
+	chunkSize:= 50
+	for i:= 0; i< len(response); i+= chunkSize{
+		end:= i+ chunkSize
+		if end > len(response){
+			end= len(response)
+		}
+
+		chunk:= response[i:end]
+		_, err := w.Write([]byte(fmt.Sprintf("%q", chunk)))
+		if err != nil{
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		w.(http.Flusher).Flush()
+	}
+    w.Write([]byte("end of jelly bean stream response"))
 }
 
 //TODO: separate this out into models.go
