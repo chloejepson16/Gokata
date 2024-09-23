@@ -12,7 +12,7 @@ import(
 )
 
 
-var jwtKey= []byte("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE3MjY5NjQyNjMsImV4cCI6MTc1ODUwMDI2MywiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.mT2qQM_hRPIlv9RXGW4dmbb105FmmW7rDAbNzEFcSzY")
+var jwtKey= []byte("qwertyuiopasdfghjklzxcvbnm123456")
 func JWTAuth(next http.Handler) http.Handler{
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
 		authHeader:= r.Header.Get("Authorization")
