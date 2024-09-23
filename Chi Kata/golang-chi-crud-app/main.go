@@ -3,6 +3,7 @@ package main
 import(
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -82,6 +83,8 @@ func GroceryRoutes() chi.Router{
 	r.Get("/{id}", groceryHandler.GetGroceries)
 	r.Put("/{id}", groceryHandler.UpdateGroceries)
 	r.Delete("/{id}", groceryHandler.DeleteGroceries)
-	r.Post("/fileUpload", groceryHandler.uploadFile)
+	r.Post("/fileUpload", groceryHandler.UploadFile)
+	//13. create a rout that fetches data from another api: http://localhost:3000/groceries/jellybeans/7up
+	r.Get("/jellybeans/{falvorName}", groceryHandler.GetJellyBeans)
 	return r
 }

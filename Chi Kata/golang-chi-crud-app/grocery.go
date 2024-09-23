@@ -80,8 +80,25 @@ func (g GroceryHandler) DeleteGroceries( w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusNoContent)
 }
 
+//13. create a route using chi that fetches data from an extrenal api
+func (g GroceryHandler) GetJellyBeans(w http.ResponseWriter, r *http.Request){
+	flavorName:= chi.URLParam(r, "flavorName")
+	jellyBean, err:= getJellyBeans(flavorName)
+	if err != nil{
+		http.Error(w, "JellyBean was not found", http.StatusNotFound)
+		return
+	}
+	if jellyBean == "" {
+        http.Error(w, "JellyBean was not found", http.StatusNotFound)
+        return
+    }
+	w.Header().Set("Content-Type", "application/json")
+    w.Write([]byte(jellyBean))
+}
+
+//TODO: separate this out into models.go
 //file upload works with this curl command : curl -F "file=@/Users/chloejepson/Documents/Gokata/textExample.txt" http://localhost:3000/groceries/fileUpload
-func (g GroceryHandler) uploadFile(w http.ResponseWriter, r *http.Request){
+func (g GroceryHandler) UploadFile(w http.ResponseWriter, r *http.Request){
 	err:= r.ParseMultipartForm(10 << 20)
 	if err != nil{
 		http.Error(w, "cannot parse form", http.StatusBadRequest)

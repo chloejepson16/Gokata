@@ -1,5 +1,11 @@
 package main
 
+import(
+	"fmt"
+	"net/http"
+	"io/ioutil"
+)
+
 type GroceryItem struct{
 	ID string `json:"id"`
 	Name string `json:"name"`
@@ -71,4 +77,21 @@ func updateGrocery(id string, groceryUpdate GroceryItem) *GroceryItem{
 		}
 	}
 	return nil
+}
+
+func getJellyBeans(flavorName string) (string, error){
+	apiURL:= "https://jellybellywikiapi.onrender.com/api/Beans?flavorName=" + flavorName
+
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		return "", fmt.Errorf("can't call jellybean endpoint: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("can't read response: %v", err)
+	}
+
+	return string(body), nil
 }
