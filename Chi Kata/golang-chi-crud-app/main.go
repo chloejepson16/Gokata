@@ -5,6 +5,8 @@ import(
 	"encoding/json"
 	"net/http"
 	"time"
+	"os"
+	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -50,6 +52,10 @@ func main() {
 	})
 	//adding web socket
 	r.Get("/ws", webSocketEndpoint)
+	//22. route for serving static files
+	workDir, _:= os.Getwd()
+	filesDir:= http.Dir(filepath.Join(workDir,"resources"))
+	FileServer(r, "/resources", filesDir)
 
 	//mount grocery route to the main function
 	r.Mount("/groceries/v1", GroceryRoutesV1())
@@ -57,6 +63,26 @@ func main() {
 
 	http.ListenAndServe(":3000", r)
 	
+}
+
+func FileServer(r chi.Router, path string, root http.FileSystem){
+	if strings.ContainsAny(path, "{}*") {
+		panic("cannot use URL params")
+	}
+
+	if path != "/" && path[len(path)-1] != '/'{
+		r.Get(path, http.RedirectHandler(path+"/", 301).ServeHTTP)
+		path+="/"
+	}
+	//include all file types within resources directory
+	path +="*"
+
+	r.Get(path, func(w http.ResponseWriter, r *http.Request){
+		rctx:= chi.RouteContext(r.Context())
+		pathPrefix:= strings.TrimSuffix(rctx.RoutePattern(), "/*")
+		fs:= http.StripPrefix(pathPrefix, http.FileServer(root))
+		fs.ServeHTTP(w, r)
+	})
 }
 
 func JWTAuth(next http.Handler) http.Handler{
@@ -89,6 +115,7 @@ func JWTAuth(next http.Handler) http.Handler{
 	})
 }
 
+//19. create a websocket endpoint for real time comms
 func webSocketEndpoint(w http.ResponseWriter, r *http.Request){
 	ws, err:= upgrader.Upgrade(w, r, nil)
 	if err != nil{
