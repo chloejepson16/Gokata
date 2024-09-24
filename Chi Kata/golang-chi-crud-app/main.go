@@ -31,6 +31,8 @@ func main() {
     r := chi.NewRouter()
 	//4. implement chi middleware
     r.Use(middleware.Logger)
+	//23. compress
+	r.Use(middleware.Compress(5))
 	//16. implement CORS
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"*"},
