@@ -99,11 +99,17 @@ func (g GroceryHandler) GetJellyBeans(w http.ResponseWriter, r *http.Request){
 }
 
 func (g GroceryHandler) GetV2 (w http.ResponseWriter, r *http.Request){
-	response:= getV2()
-	if response == ""{
-		http.Error(w, "No endpoint for V2 found", http.StatusNotFound)
+	response, err:= getJellyBeans("7up")
+	if err != nil{
+		fmt.Println(err)
+		http.Error(w, "JellyBean was not found (endpoit to read in chunks)", http.StatusNotFound)
 		return
 	}
+	if response == "" {
+		fmt.Println(err)
+        http.Error(w, "JJellyBean was not found (endpoit to read in chunks)", http.StatusNotFound)
+        return
+    }
 	w.Header().Set("Content-Type", "application/json")
 	//17. write data in chunks
 	chunkSize:= 50
