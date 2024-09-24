@@ -6,6 +6,8 @@ import(
 "encoding/json"
 "os"
 "path/filepath"
+"time"
+"context"
 
 "github.com/go-chi/chi/v5") 
 
@@ -99,36 +101,58 @@ func (g GroceryHandler) GetJellyBeans(w http.ResponseWriter, r *http.Request){
 }
 
 func (g GroceryHandler) GetV2 (w http.ResponseWriter, r *http.Request){
-	response, err:= getJellyBeans("7up")
-	if err != nil{
-		fmt.Println(err)
-		http.Error(w, "JellyBean was not found (endpoit to read in chunks)", http.StatusNotFound)
-		return
-	}
-	if response == "" {
-		fmt.Println(err)
-        http.Error(w, "JJellyBean was not found (endpoit to read in chunks)", http.StatusNotFound)
-        return
-    }
-	w.Header().Set("Content-Type", "application/json")
-	//17. write data in chunks
-	chunkSize:= 50
-	for i:= 0; i< len(response); i+= chunkSize{
-		end:= i+ chunkSize
-		if end > len(response){
-			end= len(response)
-		}
+	//18. implementing a shutdown based on timeout of request
+	//create context that cancels the operation after 5 seconds
+	ctx, cancel:= context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
 
-		chunk:= response[i:end]
-		_, err := w.Write([]byte(fmt.Sprintf("%q", chunk)))
+	//create a channel for response from data
+	responseCh:= make(chan string)
+	errCh:= make(chan error)
+
+	//launch goroutine to handle the request and send result or error
+	go func(){
+		response, err:= getJellyBeans("7up")
 		if err != nil{
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			errCh <- err
 			return
 		}
-
-		w.(http.Flusher).Flush()
+		responseCh <- response
+	}()
+	
+	//listen to response from goroutine 
+	select{
+		case response := <-responseCh:
+			if response == "" {
+				http.Error(w, "JJellyBean was not found (endpoit to read in chunks)", http.StatusNotFound)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			//17. write data in chunks
+			chunkSize:= 50
+			for i:= 0; i< len(response); i+= chunkSize{
+				end:= i+ chunkSize
+				if end > len(response){
+					end= len(response)
+				}
+		
+				chunk:= response[i:end]
+				_, err := w.Write([]byte(fmt.Sprintf("%q", chunk)))
+				if err != nil{
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+		
+				w.(http.Flusher).Flush()
+			}
+			w.Write([]byte("end of jelly bean stream response"))
+			
+		case err:= <-errCh:
+			http.Error(w, fmt.Sprintf("Error retrieving jelly beans: %v", err), http.StatusBadRequest)
+		case <-ctx.Done():
+			http.Error(w, "Request timed out", http.StatusGatewayTimeout)
 	}
-    w.Write([]byte("end of jelly bean stream response"))
+
 }
 
 //TODO: separate this out into models.go
