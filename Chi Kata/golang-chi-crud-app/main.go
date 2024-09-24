@@ -1,6 +1,7 @@
 package main
 
 import(
+	"fmt"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -12,7 +13,16 @@ import(
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/go-chi/httprate"
 	"github.com/go-chi/cors"
+	"github.com/gorilla/websocket"
 )
+
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r*http.Request) bool{
+		return true
+	},
+	ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+}
 
 func main() {
 	//1. create a simple http server that responds with hello world
@@ -38,6 +48,8 @@ func main() {
 		w.Header().Set("Content-Type", "applicaiton/json")
 		json.NewEncoder(w).Encode(response)
 	})
+	//adding web socket
+	r.Get("/ws", webSocketEndpoint)
 
 	//mount grocery route to the main function
 	r.Mount("/groceries/v1", GroceryRoutesV1())
@@ -76,6 +88,31 @@ func JWTAuth(next http.Handler) http.Handler{
 		next.ServeHTTP(w, r)
 	})
 }
+
+func webSocketEndpoint(w http.ResponseWriter, r *http.Request){
+	ws, err:= upgrader.Upgrade(w, r, nil)
+	if err != nil{
+		http.Error(w, "can't upgrade connection", http.StatusInternalServerError)
+		return
+	}
+	defer ws.Close()
+
+	//listen for messages from the websocket
+	for{
+		messageType, message, err:= ws.ReadMessage()
+		if err!= nil{
+			fmt.Println("Read error: ", err)
+			break
+		}
+		fmt.Println(message)
+		err= ws.WriteMessage(messageType, message)
+		if err != nil{
+			fmt.Println(err)
+			break
+		}
+	}
+}
+
 
 //mounting grocery handler
 //7. create an endpoint to perform crud operations on mock data
