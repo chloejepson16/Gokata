@@ -9,4 +9,5 @@ require (
 	github.com/go-chi/httprate v0.14.1 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 )

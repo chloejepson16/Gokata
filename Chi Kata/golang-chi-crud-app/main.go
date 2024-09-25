@@ -7,6 +7,8 @@ import(
 	"time"
 	"os"
 	"path/filepath"
+	"log"
+	"database/sql"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -16,6 +18,7 @@ import(
 	"github.com/go-chi/httprate"
 	"github.com/go-chi/cors"
 	"github.com/gorilla/websocket"
+	_ "github.com/lib/pq"
 )
 
 var upgrader = websocket.Upgrader{
@@ -40,6 +43,28 @@ func main() {
 		AllowedHeaders: []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
 	}))
+
+	//23. connect a SQL Db
+	//export all env variables, un and pw are 'postgres', port is 5432, host is go-kata-db.czics24ggkzl.us-east-1.rds.amazonaws.com
+	dbUser:= os.Getenv("DB_USER")
+	dbPassword:= os.Getenv("DB_PASSWORD")
+	dbName:= os.Getenv("DB_NAME")
+	dbHost:= os.Getenv("DB_HOST")
+	dbPort:= os.Getenv("DB_PORT")
+
+	//connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, dbHost, dbPort, dbName)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", dbHost, dbPort, dbUser, dbPassword, dbName)
+	db, err:= sql.Open("postgres", dsn)
+	if err != nil{
+		log.Fatalf("Failed to open a DB connection: %v", err)
+	}
+	defer db.Close()
+
+	err= db.Ping()
+	if err != nil{
+		log.Fatalf("Failed to open a DB connection: %v", err)
+	}
+
     r.Get("/", func(w http.ResponseWriter, r *http.Request) {
         w.Write([]byte("Hello, World"))
     })
