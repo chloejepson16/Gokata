@@ -7,7 +7,6 @@ import(
 	"net/http"
 	"time"
 	"os"
-	"path/filepath"
 	"log"
 	"database/sql"
 
@@ -44,13 +43,12 @@ func run(ctx context.Context) error{
 	//export all env variables, un and pw are 'postgres', port is 5432, host is go-kata-db.czics24ggkzl.us-east-1.rds.amazonaws.com
 	dbUser:= os.Getenv("DB_USER")
 	dbPassword:= os.Getenv("DB_PASSWORD")
-	dbName:= os.Getenv("DB_NAME")
 	dbHost:= os.Getenv("DB_HOST")
 	dbPort:= os.Getenv("DB_PORT")
 
-	//connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, dbHost, dbPort, dbName)
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", dbHost, dbPort, dbUser, dbPassword, dbName)
-	db, err:= sql.Open("postgres", dsn)
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s", dbUser, dbPassword, dbHost, dbPort)
+	//dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", dbHost, dbPort, dbUser, dbPassword, dbName)
+	db, err:= sql.Open("postgres", connStr)
 	if err != nil{
 		log.Fatalf("Failed to open a DB connection: %v", err)
 	}
@@ -90,8 +88,8 @@ func run(ctx context.Context) error{
 	//adding web socket
 	r.Get("/ws", webSocketEndpoint)
 	//22. route for serving static files
-	workDir, _:= os.Getwd()
-	filesDir:= http.Dir(filepath.Join(workDir,"resources"))
+	//workDir, _:= os.Getwd()
+	filesDir := http.Dir("../../resources")
 	FileServer(r, "/resources", filesDir)
 
 	//mount grocery route to the main function
@@ -257,7 +255,7 @@ func GroceryRoutesV1() chi.Router{
 	r.Put("/{id}", groceryHandler.UpdateGroceries)
 	r.Delete("/{id}", groceryHandler.DeleteGroceries)
 	r.Post("/fileUpload", groceryHandler.UploadFile)
-	//13. create a rout that fetches data from another api: http://localhost:3000/groceries/jellybeans/7up
+	//13. create a rout that fetches data from another api: http://localhost:3000/groceries/v1/jellybeans/7up
 	r.Get("/jellybeans/{flavorName}", groceryHandler.GetJellyBeans)
 	return r
 }
