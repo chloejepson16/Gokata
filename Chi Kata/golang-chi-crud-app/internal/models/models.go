@@ -1,10 +1,10 @@
-package main
+package models
 
 import(
 	"fmt"
 	"net/http"
 	"io/ioutil"
-	"regexp"
+	"regexp"	
 )
 
 type GroceryItem struct{
@@ -41,11 +41,11 @@ var groceryList= []*GroceryItem{
 	},
 }
 
-func listGroceries() []*GroceryItem{
+func ListGroceries() []*GroceryItem{
 	return groceryList
 }
 
-func getGroceries(id string) *GroceryItem{
+func GetGroceries(id string) *GroceryItem{
 	for _, grocery:= range groceryList{
 		if grocery.ID == id{
 			return grocery
@@ -54,11 +54,11 @@ func getGroceries(id string) *GroceryItem{
 	return nil
 }
 
-func addGrocery(grocery GroceryItem){
+func AddGrocery(grocery GroceryItem){
 	groceryList= append(groceryList, &grocery)
 }
 
-func deleteGrocery(id string) *GroceryItem{
+func DeleteGrocery(id string) *GroceryItem{
 	for i, grocery:= range groceryList{
 		if grocery.ID == id{
 			deletedGrocery := groceryList[i]
@@ -70,7 +70,7 @@ func deleteGrocery(id string) *GroceryItem{
 	return nil
 }
 
-func updateGrocery(id string, groceryUpdate GroceryItem) *GroceryItem{
+func UpdateGrocery(id string, groceryUpdate GroceryItem) *GroceryItem{
 	for i, grocery:= range groceryList{
 		if grocery.ID == id{
 			groceryList[i]= &groceryUpdate
@@ -80,11 +80,11 @@ func updateGrocery(id string, groceryUpdate GroceryItem) *GroceryItem{
 	return nil
 }
 
-func getV2()(string){
+func GetV2()(string){
 	return "This is an endpoint for v2!"
 }
 
-func getJellyBeans(flavorName string) (string, error){
+func GetJellyBeans(flavorName string) (string, error){
 
 	//14. implement input validation on request parameters
 	validFlavorName := regexp.MustCompile(`^[a-zA-Z0-9\s]+$`)

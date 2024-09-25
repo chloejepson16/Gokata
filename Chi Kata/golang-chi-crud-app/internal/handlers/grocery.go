@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import(
 "fmt"
@@ -8,6 +8,7 @@ import(
 "path/filepath"
 "time"
 "context"
+"github.com/chloejepson16/golang-chi-crud-app/internal/models"
 
 "github.com/go-chi/chi/v5") 
 
@@ -17,7 +18,7 @@ type GroceryHandler struct{
 
 func (g GroceryHandler) ListGroceries( w http.ResponseWriter, r *http.Request) {
 	//8. implement error handling
-	err:= json.NewEncoder(w).Encode(listGroceries())
+	err:= json.NewEncoder(w).Encode(models.ListGroceries())
 	if err != nil{
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -28,7 +29,7 @@ func (g GroceryHandler) ListGroceries( w http.ResponseWriter, r *http.Request) {
 func (g GroceryHandler) GetGroceries( w http.ResponseWriter, r *http.Request) {
 	//6. implement route params with chi to retrieve specific data
 	id:= chi.URLParam(r, "id")
-	grocery:= getGroceries(id)
+	grocery:= models.GetGroceries(id)
 	if grocery == nil{
 		http.Error(w, "No grocery item found", http.StatusNotFound)
 	}
@@ -40,13 +41,13 @@ func (g GroceryHandler) GetGroceries( w http.ResponseWriter, r *http.Request) {
 }
 //5. create a route that accepts post requests
 func (g GroceryHandler) CreateGroceries( w http.ResponseWriter, r *http.Request) {
-	var grocery GroceryItem
+	var grocery models.GroceryItem
 	err:= json.NewDecoder(r.Body).Decode(&grocery)
 	if err != nil{
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	addGrocery(grocery)
+	models.AddGrocery(grocery)
 	err= json.NewEncoder(w).Encode(grocery)
 	if err != nil{
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -55,13 +56,13 @@ func (g GroceryHandler) CreateGroceries( w http.ResponseWriter, r *http.Request)
 }
 func (g GroceryHandler) UpdateGroceries( w http.ResponseWriter, r *http.Request) {
 	id:= chi.URLParam(r, "id")
-	var grocery GroceryItem
+	var grocery models.GroceryItem
 	err:= json.NewDecoder(r.Body).Decode(&grocery)
 	if err != nil{
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	updatedGrocery:= updateGrocery(id, grocery)
+	updatedGrocery:= models.UpdateGrocery(id, grocery)
 	if updatedGrocery == nil{
 		http.Error(w, "Grocery not found", http.StatusNotFound)
 		return
@@ -74,7 +75,7 @@ func (g GroceryHandler) UpdateGroceries( w http.ResponseWriter, r *http.Request)
 }
 func (g GroceryHandler) DeleteGroceries( w http.ResponseWriter, r *http.Request) {
 	id:= chi.URLParam(r, "id")
-	grocery:= deleteGrocery(id)
+	grocery:= models.DeleteGrocery(id)
 	if grocery == nil{
 		http.Error(w, "Grocery not found", http.StatusNotFound)
 		return
@@ -85,7 +86,7 @@ func (g GroceryHandler) DeleteGroceries( w http.ResponseWriter, r *http.Request)
 //13. create a route using chi that fetches data from an extrenal api
 func (g GroceryHandler) GetJellyBeans(w http.ResponseWriter, r *http.Request){
 	flavorName:= chi.URLParam(r, "flavorName")
-	jellyBean, err:= getJellyBeans(flavorName)
+	jellyBean, err:= models.GetJellyBeans(flavorName)
 	if err != nil{
 		fmt.Println(err)
 		http.Error(w, "JellyBean was not found", http.StatusNotFound)
@@ -112,7 +113,7 @@ func (g GroceryHandler) GetV2 (w http.ResponseWriter, r *http.Request){
 
 	//launch goroutine to handle the request and send result or error
 	go func(){
-		response, err:= getJellyBeans("7up")
+		response, err:= models.GetJellyBeans("7up")
 		if err != nil{
 			errCh <- err
 			return

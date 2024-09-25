@@ -2,6 +2,7 @@ package main
 
 import(
 	"fmt"
+	"context"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -9,6 +10,8 @@ import(
 	"path/filepath"
 	"log"
 	"database/sql"
+
+	"github.com/chloejepson16/golang-chi-crud-app/internal/handlers"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -29,21 +32,14 @@ var upgrader = websocket.Upgrader{
     WriteBufferSize: 1024,
 }
 
-func main() {
-	//1. create a simple http server that responds with hello world
-    r := chi.NewRouter()
-	//4. implement chi middleware
-    r.Use(middleware.Logger)
-	//23. compress
-	r.Use(middleware.Compress(5))
-	//16. implement CORS
-	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
-		AllowedHeaders: []string{"Content-Type", "Authorization"},
-		AllowCredentials: true,
-	}))
+func main(){
+	ctx:= context.Background()
+	if err:= run(ctx); err != nil{
+		log.Fatalf("Startup failed. err: %v", err)
+	}
+}
 
+func run(ctx context.Context) error{
 	//23. connect a SQL Db
 	//export all env variables, un and pw are 'postgres', port is 5432, host is go-kata-db.czics24ggkzl.us-east-1.rds.amazonaws.com
 	dbUser:= os.Getenv("DB_USER")
@@ -62,10 +58,24 @@ func main() {
 
 	err= db.Ping()
 	if err != nil{
-		log.Fatalf("Failed to open a DB connection: %v", err)
+		log.Fatalf("Failed to open a DB connection on ping: %v", err)
 	}
 
-    r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	//1. create a simple http server that responds with hello world
+    r := chi.NewRouter()
+	//4. implement chi middleware
+    r.Use(middleware.Logger)
+	//23. compress
+	r.Use(middleware.Compress(5))
+	//16. implement CORS
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
         w.Write([]byte("Hello, World"))
     })
 
@@ -87,10 +97,75 @@ func main() {
 	//mount grocery route to the main function
 	r.Mount("/groceries/v1", GroceryRoutesV1())
 	r.Mount("/groceries/v2", GroceryRoutesV2())
-
-	http.ListenAndServe(":3000", r)
-	
+	err = http.ListenAndServe("localhost:3000", r)
+	if err!= nil{
+		return err
+	}
+	return nil
 }
+
+// func main() {
+// 	//1. create a simple http server that responds with hello world
+//     r := chi.NewRouter()
+// 	//4. implement chi middleware
+//     r.Use(middleware.Logger)
+// 	//23. compress
+// 	r.Use(middleware.Compress(5))
+// 	//16. implement CORS
+// 	r.Use(cors.Handler(cors.Options{
+// 		AllowedOrigins: []string{"*"},
+// 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+// 		AllowedHeaders: []string{"Content-Type", "Authorization"},
+// 		AllowCredentials: true,
+// 	}))
+
+// 	//23. connect a SQL Db
+// 	//export all env variables, un and pw are 'postgres', port is 5432, host is go-kata-db.czics24ggkzl.us-east-1.rds.amazonaws.com
+// 	dbUser:= os.Getenv("DB_USER")
+// 	dbPassword:= os.Getenv("DB_PASSWORD")
+// 	dbName:= os.Getenv("DB_NAME")
+// 	dbHost:= os.Getenv("DB_HOST")
+// 	dbPort:= os.Getenv("DB_PORT")
+
+// 	//connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, dbHost, dbPort, dbName)
+// 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", dbHost, dbPort, dbUser, dbPassword, dbName)
+// 	db, err:= sql.Open("postgres", dsn)
+// 	if err != nil{
+// 		log.Fatalf("Failed to open a DB connection: %v", err)
+// 	}
+// 	defer db.Close()
+
+// 	err= db.Ping()
+// 	if err != nil{
+// 		log.Fatalf("Failed to open a DB connection: %v", err)
+// 	}
+
+//     r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+//         w.Write([]byte("Hello, World"))
+//     })
+
+// 	//2. create a route that returns a json response
+// 	r.Get("/json", func(w http.ResponseWriter, r *http.Request){
+// 		response:= map[string]string{
+// 			"message": "this is the json response instead of Hello, World",
+// 		}
+// 		w.Header().Set("Content-Type", "applicaiton/json")
+// 		json.NewEncoder(w).Encode(response)
+// 	})
+// 	//adding web socket
+// 	r.Get("/ws", webSocketEndpoint)
+// 	//22. route for serving static files
+// 	workDir, _:= os.Getwd()
+// 	filesDir:= http.Dir(filepath.Join(workDir,"resources"))
+// 	FileServer(r, "/resources", filesDir)
+
+// 	//mount grocery route to the main function
+// 	r.Mount("/groceries/v1", GroceryRoutesV1())
+// 	r.Mount("/groceries/v2", GroceryRoutesV2())
+
+// 	http.ListenAndServe(":3000", r)
+	
+// }
 
 func FileServer(r chi.Router, path string, root http.FileSystem){
 	if strings.ContainsAny(path, "{}*") {
@@ -172,7 +247,7 @@ func webSocketEndpoint(w http.ResponseWriter, r *http.Request){
 //7. create an endpoint to perform crud operations on mock data
 func GroceryRoutesV1() chi.Router{
 	r:= chi.NewRouter()
-	groceryHandler:= GroceryHandler{}
+	groceryHandler:= handlers.GroceryHandler{}
 	//9. add authentification to one of the endpoints
 	//12. add rate limiting to one endpoint
 	r.With(httprate.Limit(2, 1*time.Minute)).Get("/groceries", groceryHandler.ListGroceries)
@@ -189,7 +264,7 @@ func GroceryRoutesV1() chi.Router{
 //15. create a route that supports versioning
 func GroceryRoutesV2() chi.Router{
 	r:= chi.NewRouter()
-	groceryHandler:= GroceryHandler{}
+	groceryHandler:= handlers.GroceryHandler{}
 	r.With(httprate.Limit(2, 1*time.Minute)).Get("/groceries", groceryHandler.ListGroceries)
 	r.Get("/", groceryHandler.GetV2)
 	return r
