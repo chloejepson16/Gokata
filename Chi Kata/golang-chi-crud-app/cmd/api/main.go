@@ -22,6 +22,7 @@ import(
 	"github.com/gorilla/websocket"
 	_ "github.com/lib/pq"
 )
+var db *sql.DB
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r*http.Request) bool{
@@ -245,7 +246,7 @@ func webSocketEndpoint(w http.ResponseWriter, r *http.Request){
 //7. create an endpoint to perform crud operations on mock data
 func GroceryRoutesV1() chi.Router{
 	r:= chi.NewRouter()
-	groceryHandler:= handlers.GroceryHandler{}
+	groceryHandler:= handlers.GroceryHandler{DB: db}
 	//9. add authentification to one of the endpoints
 	//12. add rate limiting to one endpoint
 	r.With(httprate.Limit(2, 1*time.Minute)).Get("/groceries", groceryHandler.ListGroceries)
@@ -262,8 +263,9 @@ func GroceryRoutesV1() chi.Router{
 //15. create a route that supports versioning
 func GroceryRoutesV2() chi.Router{
 	r:= chi.NewRouter()
-	groceryHandler:= handlers.GroceryHandler{}
+	groceryHandler:= handlers.GroceryHandler{DB: db}
 	r.With(httprate.Limit(2, 1*time.Minute)).Get("/groceries", groceryHandler.ListGroceries)
 	r.Get("/", groceryHandler.GetV2)
+	r.Post("/groceryToDB", groceryHandler.AddGroceryToDB)
 	return r
 }
