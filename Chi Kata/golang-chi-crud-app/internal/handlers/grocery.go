@@ -1,19 +1,24 @@
 package handlers
 
-import(
-"fmt"
-"net/http"
-"encoding/json"
-"os"
-"path/filepath"
-"time"
-"context"
-"github.com/chloejepson16/golang-chi-crud-app/internal/models"
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"time"
 
-"github.com/go-chi/chi/v5") 
+	"github.com/chloejepson16/golang-chi-crud-app/internal/models"
+
+	"github.com/go-chi/chi/v5"
+)
 
 //contains functions to perform crud operations
 type GroceryHandler struct{
+	DB *sql.DB
 }
 
 func (g GroceryHandler) ListGroceries( w http.ResponseWriter, r *http.Request) {
@@ -81,6 +86,26 @@ func (g GroceryHandler) DeleteGroceries( w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (g GroceryHandler) AddGroceryToDB( w http.ResponseWriter, r *http.Request){
+	var item models.GroceryItem
+	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
+		log.Fatalf("Failed to open a DB connection on add to grocerydb: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if g.DB == nil {
+		http.Error(w, "Database connection is not available", http.StatusInternalServerError)
+		return
+	}
+	if err := models.AddGroceryItemToDB(g.DB, item); err != nil {
+		fmt.Println("failed at models.add grocery to db")
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(item)
 }
 
 //13. create a route using chi that fetches data from an extrenal api

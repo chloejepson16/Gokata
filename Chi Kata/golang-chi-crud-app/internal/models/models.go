@@ -1,17 +1,20 @@
 package models
 
-import(
+import (
 	"fmt"
-	"net/http"
 	"io/ioutil"
-	"regexp"	
+	"log"
+	"net/http"
+	"regexp"
+
+	"database/sql"
 )
 
-type GroceryItem struct{
-	ID string `json:"id"`
-	Name string `json:"name"`
-	Category string `json:"category"`
-	Price string `json:"price"`
+type GroceryItem struct {
+    ID       string `json:"ID"`
+    Name     string `json:"name"`
+    Category string `json:"category"`
+    Price    string `json:"price"`
 }
 
 var groceryList= []*GroceryItem{
@@ -56,6 +59,23 @@ func GetGroceries(id string) *GroceryItem{
 
 func AddGrocery(grocery GroceryItem){
 	groceryList= append(groceryList, &grocery)
+}
+
+func AddGroceryItemToDB(db *sql.DB, grocery GroceryItem) error{
+	if db == nil {
+        fmt.Println("db is nil")
+    }
+	fmt.Println(grocery)
+	query := "INSERT INTO items (ID, Name, Category, Price) VALUES ($1, $2, $3, $4) RETURNING ID"
+    err := db.QueryRow(query, grocery.ID, grocery.Name, grocery.Category, grocery.Price).Scan(&grocery.ID)
+	if err != nil{
+		fmt.Println("failed to query db error")
+		log.Fatalf("Failed to query db: %v", err)
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func DeleteGrocery(id string) *GroceryItem{
