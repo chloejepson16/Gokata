@@ -108,6 +108,22 @@ func (g GroceryHandler) AddGroceryToDB( w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(item)
 }
 
+func (g GroceryHandler) GetGroceriesFromDB( w http.ResponseWriter, r *http.Request){
+	if g.DB == nil {
+		http.Error(w, "Database connection is not available", http.StatusInternalServerError)
+		return
+	}
+
+	groceriesJSON, err := models.GetGroceryListFromDB(g.DB)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+	w.Header().Set("Content-Type", "application/json")
+    w.Write(groceriesJSON)
+}
+
 //13. create a route using chi that fetches data from an extrenal api
 func (g GroceryHandler) GetJellyBeans(w http.ResponseWriter, r *http.Request){
 	flavorName:= chi.URLParam(r, "flavorName")

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -76,6 +77,33 @@ func AddGroceryItemToDB(db *sql.DB, grocery GroceryItem) error{
 		return err
 	}
 	return nil
+}
+
+func GetGroceryListFromDB(db *sql.DB) ([]byte, error){
+	rows, err := db.Query("SELECT ID, Name, Category, Price FROM items")
+    if err != nil {
+        return nil, err // Return the error if the query fails
+    }
+	defer rows.Close()
+
+	var groceries []GroceryItem
+	for rows.Next() {
+        var grocery GroceryItem
+        if err := rows.Scan(&grocery.ID, &grocery.Name, &grocery.Category, &grocery.Price); err != nil {
+            return nil, err
+        }
+        groceries = append(groceries, grocery)
+    }
+	if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+	groceriesJSON, err := json.Marshal(groceries)
+    if err != nil {
+        return nil, err // Return an error if JSON encoding fails
+    }
+
+    return groceriesJSON, nil // Return the JSON byte slice
 }
 
 func DeleteGrocery(id string) *GroceryItem{

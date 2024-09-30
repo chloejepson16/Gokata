@@ -210,5 +210,6 @@ func GroceryRoutesV2(groceryHandler handlers.GroceryHandler) chi.Router{
 	r.With(httprate.Limit(2, 1*time.Minute)).Get("/groceries", groceryHandler.ListGroceries)
 	r.Get("/", groceryHandler.GetV2)
 	r.Post("/groceryToDB", groceryHandler.AddGroceryToDB)
+	r.Get("/groceryFromDB", groceryHandler.GetGroceriesFromDB)
 	return r
 }
