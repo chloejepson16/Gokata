@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hello World</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <!-- chart-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  </head>
+  <body>
+    <h1>Hello, World!</h1>
+    <form id="groceryForm">
+      <label for="id">ID:</label>
+      <input type="text" id="id" required />
+      <br />
+
+      <label for="name">Name:</label>
+      <input type="text" id="name" required />
+      <br />
+
+      <label for="category">Category:</label>
+      <input type="text" id="category" required />
+      <br />
+
+      <label for="price">Price:</label>
+      <input type="text" id="price" required />
+      <br />
+
+      <button type="submit">Add to Database</button>
+    </form>
+    <canvas id="groceryChart" width="400" height="200"></canvas>
+    <canvas id="priceBreakdownChart" width="200" height="100"></canvas>
+    <script src="./script.js"></script>
+  </body>
+</html>

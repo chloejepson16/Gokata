@@ -101,6 +101,12 @@ func run(ctx context.Context) error{
 	filesDir := http.Dir("./resources")
 	FileServer(r, "/resources", filesDir)
 
+	swaggerDocsDir:= http.Dir("./internal/swagger/swagger.json")
+	FileServer2(r, "/swagger/swagger.json", swaggerDocsDir)
+
+	swaggerFilesDIR:= http.Dir("./internal/swagger-ui/swagger-ui-dist")
+	FileServer(r, "/swagger", swaggerFilesDIR)
+
 	groceryHandler := handlers.GroceryHandler{DB: db}
 	r.Mount("/groceries/v1", GroceryRoutesV1(groceryHandler))
 	r.Mount("/groceries/v2", GroceryRoutesV2(groceryHandler))
@@ -117,7 +123,7 @@ func FileServer(r chi.Router, path string, root http.FileSystem){
 	}
 
 	if path != "/" && path[len(path)-1] != '/'{
-		r.Get(path, http.RedirectHandler(path+"/", 301).ServeHTTP)
+		r.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
 		path+="/"
 	}
 	//include all file types within resources directory
@@ -130,6 +136,32 @@ func FileServer(r chi.Router, path string, root http.FileSystem){
 		fs.ServeHTTP(w, r)
 	})
 }
+func FileServer2(r chi.Router, path string, root http.FileSystem) {
+	if strings.ContainsAny(path, "{}*") {
+		panic("cannot use URL params")
+	}
+
+	// Always ensure the path ends with a "/"
+	if path != "/" && path[len(path)-1] != '/' {
+		path += "/"
+	}
+
+	// Include all file types within the resources directory
+	path += "*"
+
+	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+		rctx := chi.RouteContext(r.Context())
+		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
+		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
+		fs.ServeHTTP(w, r)
+	})
+
+	// Additional handler for the path without a trailing slash
+	r.Get(strings.TrimSuffix(path, "/"), func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, path, http.StatusMovedPermanently)
+	})
+}
+
 
 func JWTAuth(next http.Handler) http.Handler{
 	var jwtKey= []byte("qwertyuiopasdfghjklzxcvbnm123456")
